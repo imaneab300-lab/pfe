@@ -1,15 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Card from '../../../components/ui/Card';
 import Button from '../../../components/ui/Button';
 import { Bell, CheckCircle, AlertCircle, Info, Calendar } from 'lucide-react';
 
 export default function TeacherNotifications() {
-  const notifications = [
+  const [notifications, setNotifications] = useState([
     { title: 'Assignment Submitted', desc: 'Emily Davis submitted "Wave Mechanics Lab Report" for Physics 101.', type: 'success', date: 'Today, 11:20 AM', unread: true },
     { title: 'New Announcement from Admin', desc: 'Staff meeting scheduled for Friday October 25th at 2:00 PM in Conference Room A.', type: 'alert', date: 'Today, 09:00 AM', unread: true },
     { title: 'Grade Review Request', desc: 'Alex Johnson has submitted a grade review request for the midterm exam.', type: 'info', date: 'Yesterday, 03:15 PM', unread: false },
-    { title: 'Class Reminder', desc: 'Your Physics 101 class starts in 30 minutes in Room 204.', type: 'event', date: 'Oct 24, 08:30 AM', unread: false },
-  ];
+    { id: 4, title: 'Class Reminder', desc: 'Your Physics 101 class starts in 30 minutes in Room 204.', type: 'event', date: 'Oct 24, 08:30 AM', unread: false },
+  ]);
+
+  const unreadCount = notifications.filter(n => n.unread).length;
+
+  const handleMarkAllAsRead = () => {
+      setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
+  };
 
   const getIcon = (type) => ({
     success: <CheckCircle size={22} color="var(--color-success)" />,
@@ -21,12 +27,15 @@ export default function TeacherNotifications() {
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <h1 style={{ fontSize: '2rem' }}>Notifications</h1>
-        <Button variant="outline">Mark All as Read</Button>
+        <h1 style={{ fontSize: '2rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            Notifications
+            {unreadCount > 0 && <span style={{ background: 'var(--color-primary)', color: 'white', fontSize: '1rem', padding: '0.25rem 0.75rem', borderRadius: '1rem' }}>{unreadCount} New</span>}
+        </h1>
+        <Button variant="outline" onClick={handleMarkAllAsRead} disabled={unreadCount === 0}>Mark All as Read</Button>
       </div>
       <Card style={{ padding: 0 }}>
-        {notifications.map((n, idx) => (
-          <div key={idx} style={{
+        {notifications.map((n) => (
+          <div key={n.id} style={{
             padding: '1.5rem', borderBottom: '1px solid var(--color-border)',
             display: 'flex', gap: '1.25rem', alignItems: 'flex-start',
             background: n.unread ? 'var(--color-primary-light)' : 'white',

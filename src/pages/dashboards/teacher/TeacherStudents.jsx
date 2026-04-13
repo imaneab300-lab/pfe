@@ -2,9 +2,12 @@ import React, { useState } from 'react';
 import Card from '../../../components/ui/Card';
 import Button from '../../../components/ui/Button';
 import { Search, Mail, MessageSquare } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export default function TeacherStudents() {
+  const navigate = useNavigate();
   const [filterClass, setFilterClass] = useState('All Classes');
+  const [searchTerm, setSearchTerm] = useState('');
 
   const students = [
     { name: 'Alex Johnson', id: 'STD-1002', class: 'Mathematics 10A', grade: '92%', lastAttendance: 'Present', avatar: 'A' },
@@ -13,7 +16,10 @@ export default function TeacherStudents() {
     { name: 'Sophia Martinez', id: 'STD-1022', class: 'Advanced Calculus', grade: '95%', lastAttendance: 'Present', avatar: 'S' },
   ];
 
-  const filteredStudents = filterClass === 'All Classes' ? students : students.filter(s => s.class === filterClass);
+  let filteredStudents = filterClass === 'All Classes' ? students : students.filter(s => s.class === filterClass);
+  if (searchTerm) {
+    filteredStudents = filteredStudents.filter(s => s.name.toLowerCase().startsWith(searchTerm.toLowerCase()));
+  }
 
   return (
     <div>
@@ -27,7 +33,7 @@ export default function TeacherStudents() {
             <select 
                value={filterClass}
                onChange={(e) => setFilterClass(e.target.value)}
-               style={{ padding: '0.5rem 1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', outline: 'none', background: 'white' }}
+                style={{ padding: '0.625rem 1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', outline: 'none', background: 'var(--color-surface)', color: 'var(--color-text-main)', fontSize: '0.875rem' }}
             >
                <option>All Classes</option>
                <option>Mathematics 10A</option>
@@ -40,7 +46,9 @@ export default function TeacherStudents() {
             <input 
               type="text" 
               placeholder="Search students..." 
-              style={{ width: '250px', padding: '0.5rem 1rem 0.5rem 2.5rem', borderRadius: '2rem', border: '1px solid var(--color-border)', outline: 'none' }}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{ width: '280px', padding: '0.625rem 1rem 0.625rem 2.75rem', borderRadius: '2rem', border: '1.5px solid var(--color-border)', outline: 'none', background: 'var(--color-surface)', color: 'var(--color-text-main)', fontSize: '0.9375rem' }}
             />
           </div>
         </div>
@@ -48,19 +56,19 @@ export default function TeacherStudents() {
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
-              <tr style={{ background: 'var(--color-bg)', color: 'var(--color-text-muted)', fontSize: '0.875rem', textTransform: 'uppercase' }}>
-                <th style={{ padding: '1.5rem', fontWeight: '600' }}>Student details</th>
-                <th style={{ padding: '1.5rem', fontWeight: '600' }}>Class</th>
-                <th style={{ padding: '1.5rem', fontWeight: '600' }}>Current Grade</th>
-                <th style={{ padding: '1.5rem', fontWeight: '600' }}>Recent Attendance</th>
-                <th style={{ padding: '1.5rem', fontWeight: '600', textAlign: 'right' }}>Actions</th>
+              <tr style={{ background: 'var(--color-surface-2)', color: 'var(--color-text-muted)', fontSize: '0.875rem', textTransform: 'uppercase' }}>
+                <th style={{ padding: '1.25rem 1.5rem', fontWeight: '600' }}>Student details</th>
+                <th style={{ padding: '1.25rem 1.5rem', fontWeight: '600' }}>Class</th>
+                <th style={{ padding: '1.25rem 1.5rem', fontWeight: '600' }}>Current Grade</th>
+                <th style={{ padding: '1.25rem 1.5rem', fontWeight: '600' }}>Recent Attendance</th>
+                <th style={{ padding: '1.25rem 1.5rem', fontWeight: '600', textAlign: 'right' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredStudents.map((student, idx) => (
-                <tr key={idx} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                <tr key={idx} style={{ borderBottom: '1px solid var(--color-border)', cursor: 'pointer' }} onClick={() => navigate('/dashboard/teacher/profile')}>
                   <td style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--color-bg)', border: '1px solid var(--color-border)', color: 'var(--color-text-main)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
+                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', color: 'var(--color-text-main)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
                       {student.avatar}
                     </div>
                     <div>
@@ -83,10 +91,10 @@ export default function TeacherStudents() {
                   </td>
                   <td style={{ padding: '1.5rem', textAlign: 'right' }}>
                     <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                        <button style={{ background: 'var(--color-bg)', padding: '0.5rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', color: 'var(--color-text-muted)', cursor: 'pointer' }} title="Email Student">
+                        <button style={{ background: 'var(--color-surface-2)', padding: '0.625rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', color: 'var(--color-text-muted)', cursor: 'pointer' }} title="Email Student" onClick={(e) => e.stopPropagation()}>
                           <Mail size={16} />
                         </button>
-                        <button style={{ background: 'var(--color-bg)', padding: '0.5rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', color: 'var(--color-text-muted)', cursor: 'pointer' }} title="Message Parent">
+                        <button style={{ background: 'var(--color-surface-2)', padding: '0.625rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', color: 'var(--color-text-muted)', cursor: 'pointer' }} title="Message Parent" onClick={(e) => e.stopPropagation()}>
                           <MessageSquare size={16} />
                         </button>
                     </div>

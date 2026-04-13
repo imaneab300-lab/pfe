@@ -1,15 +1,13 @@
 import React from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { markAllNotificationsRead } from '../../../store/adminSlice';
 import Card from '../../../components/ui/Card';
 import Button from '../../../components/ui/Button';
 import { Bell, AlertCircle, CheckCircle, Info, Calendar } from 'lucide-react';
 
 export default function AdminNotifications() {
-  const notifications = [
-    { title: 'System Maintenance Scheduled', desc: 'The grading portal will be down for maintenance this Saturday from 2 AM to 4 AM.', type: 'system', date: 'Today, 09:00 AM', unread: true },
-    { title: 'New Teacher Registration', desc: 'Michael Scott has registered as a new English Teacher. Approval pending.', type: 'alert', date: 'Yesterday, 14:30 PM', unread: true },
-    { title: 'Fees Processed Successfully', desc: 'Batch payment processing for Fall 2026 completed with 0 errors.', type: 'success', date: 'Oct 24, 08:00 AM', unread: false },
-    { title: 'Meeting Reminder', desc: 'Board direction meeting at 1 PM in Conference Room A.', type: 'event', date: 'Oct 23, 11:00 AM', unread: false },
-  ];
+  const dispatch = useDispatch();
+  const notifications = useSelector(state => state.admin.notifications);
 
   const getIcon = (type) => {
     switch(type) {
@@ -21,11 +19,15 @@ export default function AdminNotifications() {
     }
   };
 
+  const handleMarkAllRead = () => {
+    dispatch(markAllNotificationsRead());
+  };
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <h1 style={{ fontSize: '2rem' }}>Notifications Array</h1>
-        <Button variant="outline">Mark All as Read</Button>
+        <Button variant="outline" onClick={handleMarkAllRead}>Mark All as Read</Button>
       </div>
 
       <Card style={{ padding: 0 }}>
@@ -38,7 +40,7 @@ export default function AdminNotifications() {
                     background: notif.unread ? 'var(--color-primary-light)' : 'transparent',
                     transition: 'background 0.2s'
                 }}>
-                    <div style={{ background: 'white', padding: '0.75rem', borderRadius: '50%', boxShadow: 'var(--shadow-sm)' }}>
+                    <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', padding: '0.75rem', borderRadius: '50%', boxShadow: 'var(--shadow-sm)' }}>
                         {getIcon(notif.type)}
                     </div>
                     <div style={{ flex: 1 }}>

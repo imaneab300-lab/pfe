@@ -1,9 +1,12 @@
 import React from 'react';
 import Card from '../../../components/ui/Card';
 import Button from '../../../components/ui/Button';
+import { useToast } from '../../../components/ui/Toast';
 import { Download, FileText, PieChart, TrendingUp, DollarSign } from 'lucide-react';
 
 export default function AdminReports() {
+  const { success } = useToast();
+
   const reports = [
     { title: 'Academic Performance Q3', type: 'Academic', date: 'Oct 15, 2026', size: '2.4 MB' },
     { title: 'Financial Audit Report', type: 'Finance', date: 'Oct 10, 2026', size: '1.8 MB' },
@@ -11,13 +14,30 @@ export default function AdminReports() {
     { title: 'Staff Evaluation Summary', type: 'HR', date: 'Sep 28, 2026', size: '4.5 MB' },
   ];
 
+  const handleDownload = (title) => {
+    // Generate dummy PDF file
+    const element = document.createElement("a");
+    const file = new Blob([`Dummy PDF Content for ${title}`], { type: 'application/pdf' });
+    element.href = URL.createObjectURL(file);
+    element.download = `${title.replace(/\s+/g, '_')}.pdf`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    
+    success(`Successfully downloaded ${title}.`);
+  };
+
+  const handleCustomReport = () => {
+    success("Generating custom report data. You will be notified when it's ready.");
+  };
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <div>
           <h1 style={{ fontSize: '2rem' }}>Institutional Reports</h1>
         </div>
-        <Button variant="primary">Generate Custom Report</Button>
+        <Button variant="primary" onClick={handleCustomReport}>Generate Custom Report</Button>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
@@ -62,7 +82,7 @@ export default function AdminReports() {
                 </td>
                 <td style={{ padding: '1.5rem', color: 'var(--color-text-muted)' }}>{report.date}</td>
                 <td style={{ padding: '1.5rem', textAlign: 'right' }}>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => handleDownload(report.title)}>
                         <Download size={16} style={{ marginRight: 8 }} /> Download PDF
                     </Button>
                 </td>
@@ -74,4 +94,3 @@ export default function AdminReports() {
     </div>
   );
 }
-

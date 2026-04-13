@@ -1,16 +1,39 @@
 import React, { useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { sendMessage } from '../../../store/adminSlice';
+import { motion, AnimatePresence } from 'framer-motion';
 import Card from '../../../components/ui/Card';
 import Button from '../../../components/ui/Button';
 import { Search, Send, Image, Paperclip } from 'lucide-react';
 
 export default function AdminMessages() {
+  const dispatch = useDispatch();
+  const contacts = useSelector(state => state.admin.contacts);
+  const messagesStore = useSelector(state => state.admin.messages);
+
   const [activeChat, setActiveChat] = useState('SJ');
-  
-  const contacts = [
-    { id: 'SJ', name: 'Sarah Jenkins', role: 'Teacher', lastMsg: 'I have updated the physics syllabus.', time: '10:45 AM', unread: true },
-    { id: 'MD', name: 'Mark Davis', role: 'Teacher', lastMsg: 'Can we schedule a meeting next week?', time: 'Yesterday', unread: false },
-    { id: 'PR', name: 'Paul Rogers', role: 'Parent', lastMsg: 'Thank you for the update.', time: 'Monday', unread: false },
-  ];
+  const [inputText, setInputText] = useState('');
+
+  const activeContact = contacts.find(c => c.id === activeChat) || contacts[0];
+  const activeMessages = messagesStore[activeChat] || [];
+
+  const handleSend = () => {
+    if (!inputText.trim()) return;
+    dispatch(sendMessage({
+      contactId: activeChat,
+      text: inputText,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      sender: 'me'
+    }));
+    setInputText('');
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSend();
+    }
+  };
 
   return (
     <div style={{ height: 'calc(100vh - 140px)', display: 'flex', flexDirection: 'column' }}>
@@ -57,42 +80,53 @@ export default function AdminMessages() {
         <Card style={{ padding: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             <div style={{ padding: '1.25rem', borderBottom: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--color-primary-light)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
-                    SJ
+                    {activeContact.id}
                 </div>
                 <div>
-                    <h3 style={{ fontSize: '1.1rem', margin: 0 }}>Sarah Jenkins</h3>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>Teacher • Online</span>
+                    <h3 style={{ fontSize: '1.1rem', margin: 0 }}>{activeContact.name}</h3>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>{activeContact.role} • Online</span>
                 </div>
             </div>
 
             <div style={{ flex: 1, padding: '1.5rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1.5rem', background: 'var(--color-bg)' }}>
-                <div style={{ alignSelf: 'flex-start', maxWidth: '70%' }}>
-                    <div style={{ background: 'white', padding: '1rem', borderRadius: '1rem', borderBottomLeftRadius: 0, boxShadow: 'var(--shadow-sm)', color: 'var(--color-text-main)' }}>
-                        Hello! I am preparing for the new semester. Can you approve the new physics lab equipment budget?
-                    </div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '0.25rem' }}>10:30 AM</div>
-                </div>
-
-                <div style={{ alignSelf: 'flex-end', maxWidth: '70%' }}>
-                    <div style={{ background: 'var(--color-primary)', padding: '1rem', borderRadius: '1rem', borderBottomRightRadius: 0, boxShadow: 'var(--shadow-sm)', color: 'white' }}>
-                        Hi Sarah, yes I have seen the proposal. I will approve it by end of day.
-                    </div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '0.25rem', textAlign: 'right' }}>10:35 AM</div>
-                </div>
-
-                <div style={{ alignSelf: 'flex-start', maxWidth: '70%' }}>
-                    <div style={{ background: 'white', padding: '1rem', borderRadius: '1rem', borderBottomLeftRadius: 0, boxShadow: 'var(--shadow-sm)', color: 'var(--color-text-main)' }}>
-                        Excellent. I have updated the physics syllabus.
-                    </div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '0.25rem' }}>10:45 AM</div>
-                </div>
+                <AnimatePresence>
+                  {activeMessages.map((msg) => (
+                    <motion.div 
+                        key={msg.id}
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        transition={{ type: 'spring', damping: 25, stiffness: 400 }}
+                        style={{ alignSelf: msg.sender === 'me' ? 'flex-end' : 'flex-start', maxWidth: '70%' }}
+                    >
+                        {msg.sender === 'me' ? (
+                            <div style={{ background: 'var(--color-primary)', padding: '1rem', borderRadius: '1rem', borderBottomRightRadius: 0, boxShadow: 'var(--shadow-sm)', color: '#fff' }}>
+                                {msg.text}
+                            </div>
+                        ) : (
+                            <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', padding: '1rem', borderRadius: '1rem', borderBottomLeftRadius: 0, boxShadow: 'var(--shadow-sm)', color: 'var(--color-text-main)' }}>
+                                {msg.text}
+                            </div>
+                        )}
+                        <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '0.25rem', textAlign: msg.sender === 'me' ? 'right' : 'left' }}>
+                            {msg.time}
+                        </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
             </div>
 
-            <div style={{ padding: '1rem', borderTop: '1px solid var(--color-border)', display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            <div style={{ padding: '1rem', borderTop: '1px solid var(--color-border)', display: 'flex', gap: '1rem', alignItems: 'center', background: 'var(--color-surface)' }}>
                 <button style={{ background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer' }}><Paperclip size={20}/></button>
                 <button style={{ background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer' }}><Image size={20}/></button>
-                <input type="text" placeholder="Type your message..." style={{ flex: 1, padding: '0.75rem 1rem', borderRadius: '2rem', border: '1px solid var(--color-border)', outline: 'none', background: 'var(--color-bg)' }} />
-                <Button variant="primary" style={{ padding: '0.75rem', borderRadius: '50%' }}>
+                <input 
+                    type="text" 
+                    placeholder="Type your message..." 
+                    value={inputText}
+                    onChange={(e) => setInputText(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    style={{ flex: 1, padding: '0.75rem 1rem', borderRadius: '2rem', border: '1px solid var(--color-border)', outline: 'none', background: 'var(--color-bg)', color: 'var(--color-text-main)' }} 
+                />
+                <Button variant="primary" style={{ padding: '0.75rem', borderRadius: '50%' }} onClick={handleSend}>
                     <Send size={18} />
                 </Button>
             </div>

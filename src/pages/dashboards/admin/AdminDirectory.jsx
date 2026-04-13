@@ -1,26 +1,36 @@
 import React, { useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { addUser } from '../../../store/adminSlice';
 import Card from '../../../components/ui/Card';
 import Button from '../../../components/ui/Button';
+import Modal from '../../../components/ui/Modal';
+import { useToast } from '../../../components/ui/Toast';
 import { Search, Plus, MoreVertical, Filter, Mail, Phone } from 'lucide-react';
 
-const usersData = [
-  { id: 'USR001', name: 'Dr. Sarah Jenkins', role: 'Teacher', email: 's.jenkins@edusaas.com', phone: '+1 234-567-8901', status: 'Active', department: 'Science' },
-  { id: 'USR002', name: 'Alex Johnson', role: 'Student', email: 'a.johnson@student.com', phone: '+1 234-567-8902', status: 'Active', department: 'Grade 10' },
-  { id: 'USR003', name: 'Amanda Clarke', role: 'Parent', email: 'amanda.c@parents.com', phone: '+1 234-567-8903', status: 'Active', department: 'N/A' },
-  { id: 'USR004', name: 'Prof. Mark Davis', role: 'Teacher', email: 'm.davis@edusaas.com', phone: '+1 234-567-8904', status: 'On Leave', department: 'Mathematics' },
-  { id: 'USR005', name: 'Emily Davis', role: 'Student', email: 'e.davis@student.com', phone: '+1 234-567-8905', status: 'Inactive', department: 'Grade 12' },
-];
-
 export default function AdminDirectory() {
+  const dispatch = useDispatch();
+  const usersData = useSelector(state => state.admin.users);
+  const { success } = useToast();
+  
   const [filter, setFilter] = useState('All');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState({ name: '', email: '', role: 'Teacher', department: '', phone: '' });
 
   const filteredUsers = filter === 'All' ? usersData : usersData.filter(u => u.role === filter);
+
+  const handleAddUser = (e) => {
+    e.preventDefault();
+    dispatch(addUser(formData));
+    setIsModalOpen(false);
+    success('User successfully added to the directory.');
+    setFormData({ name: '', email: '', role: 'Teacher', department: '', phone: '' });
+  };
 
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <h1 style={{ fontSize: '2rem' }}>Directory Management</h1>
-        <Button variant="primary">
+        <Button variant="primary" onClick={() => setIsModalOpen(true)}>
           <Plus size={18} style={{ marginRight: 8 }} /> Add New User
         </Button>
       </div>
@@ -107,6 +117,41 @@ export default function AdminDirectory() {
           </table>
         </div>
       </Card>
+
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Add New User">
+        <form onSubmit={handleAddUser} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.5rem' }}>Full Name</label>
+            <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', outline: 'none' }} />
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.5rem' }}>Email</label>
+            <input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', outline: 'none' }} />
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.5rem' }}>Phone</label>
+            <input required type="text" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', outline: 'none' }} />
+          </div>
+          <div style={{ display: 'flex', gap: '1rem' }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.5rem' }}>Role</label>
+              <select value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})} style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', outline: 'none' }}>
+                <option value="Teacher">Teacher</option>
+                <option value="Student">Student</option>
+                <option value="Parent">Parent</option>
+              </select>
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.5rem' }}>Class/Department</label>
+              <input required type="text" value={formData.department} onChange={e => setFormData({...formData, department: e.target.value})} style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', outline: 'none' }} />
+            </div>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '1rem' }}>
+            <Button variant="outline" type="button" onClick={() => setIsModalOpen(false)}>Cancel</Button>
+            <Button variant="primary" type="submit">Create User</Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }
